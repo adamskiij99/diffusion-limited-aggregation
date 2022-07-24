@@ -1,7 +1,8 @@
-BM[] brownians = new BM[3000];
-float theta = 2 * PI / 3000;
+int parts = 1;
+BM[] brownians = new BM[parts];
+float theta = 2 * PI / (float)parts;
 ArrayList<PVector> DLA = new ArrayList<PVector>();
-float r = 4;
+float r = 2;
 float R = r + 30;
 int frame = 1;
 float w;
@@ -13,25 +14,26 @@ void setup() {
   background(0);
   w = width / 2;
   h = height / 2;
-  
+
   colorMode(HSB, 360, 100, 100, 100);
 
-  DLA.add(new PVector(width/2, height/2));
+  DLA.add(new PVector(w, h));
   fill(0, 100, 100);
-  ellipse(width/2, height/2, r, r);
+  ellipse(w, h, r, r);
 }
 
 void draw() {
   //stroke(0);
   //fill(0, 1.5);
   //rect(0, 0, width, height);
+  background(0);
 
   noStroke();
   fill(255);
   float hue = 0;
   for (PVector p : DLA) {
     fill(hue, 100, 100);
-    hue += 0.5;
+    hue += 0.03;
     if (hue >= 360) {
       hue -= 360;
     }
@@ -39,7 +41,7 @@ void draw() {
 
     if ((p.x <= r) || (p.y <= r) || (p.x >= width - r) || (p.y >= height - r)) {
       save(str(frame)+".jpg");
-      brownians[4000] = new BM(0, 0);
+      brownians[parts] = new BM(0, 0);
     }
   }
 
@@ -49,13 +51,13 @@ void draw() {
   //for (int j = 0; j < height; j++) {
   //  brownians[width + j] = new BM(0, j);
   //}
-  
+
   // generate brownian motions in a circle around the centre, radius R
-  for (int i = 0; i < 3000; i++) {
-    brownians[i] = new BM(w + R * cos(i * theta), h + R * sin(i * theta));
+  for (int i = 0; i < parts; i++) {
+    brownians[i] = new BM(w + R * cos(i * theta + random(2 * PI)), h + R * sin(i * theta + random(2 * PI)));
   }
-  
-  // computation of R. this is done by finding the smallest circle about the centre containing all the DLA points, and then adding 250
+
+  // computation of R. this is done by finding the smallest circle about the centre containing all the DLA points, and then adding 100
   float rmax = 0;
   float d;
   for (PVector p : DLA) {
@@ -64,14 +66,21 @@ void draw() {
       rmax = d;
     }
   }
-  R = rmax + 250;
+  R = rmax + 100;
   
+  //noFill();
+  //stroke(255);
+  //ellipse(w, h, 2 * R, 2 * R);
+  //ellipse(w, h, 2 * 1.8 * R, 2 * 1.8 * R);
+  
+
 
   boolean hit = false;
   while (hit == false) {
-    for (int i = 0; i < 3000; i++) {
+    for (int i = 0; i < parts; i++) {
       brownians[i].propagate();
-      
+      //brownians[i].display();
+
       for (PVector p : DLA) {
         float dist = sqrt( (brownians[i].x - p.x)*(brownians[i].x - p.x) + (brownians[i].y - p.y)*(brownians[i].y - p.y) );
         if (dist < r) { // if collision, add bm to aggregate
@@ -79,6 +88,10 @@ void draw() {
           DLA.add(new PVector(brownians[i].x, brownians[i].y));
           hit = true;
           ellipse(brownians[i].x, brownians[i].y, r, r);
+          break;
+        }
+        if (dist > 1.8 * R) {
+          hit = true; // not actually hit
           break;
         }
       }
