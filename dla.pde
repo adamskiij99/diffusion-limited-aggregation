@@ -1,12 +1,13 @@
-int parts = 1;
+int parts = 2;
 BM[] brownians = new BM[parts];
 float theta = 2 * PI / (float)parts;
 ArrayList<PVector> DLA = new ArrayList<PVector>();
 float r = 2;
-float R = r + 30;
+float R = r + 20;
 int frame = 1;
 float w;
 float h;
+boolean circles = false;
 
 void setup() {
   //size(1800, 1000);
@@ -45,19 +46,12 @@ void draw() {
     }
   }
 
-  //for (int i = 0; i < width; i++) {
-  //  brownians[i] = new BM(i, 0);
-  //}
-  //for (int j = 0; j < height; j++) {
-  //  brownians[width + j] = new BM(0, j);
-  //}
-
   // generate brownian motions in a circle around the centre, radius R
   for (int i = 0; i < parts; i++) {
     brownians[i] = new BM(w + R * cos(i * theta + random(2 * PI)), h + R * sin(i * theta + random(2 * PI)));
   }
 
-  // computation of R. this is done by finding the smallest circle about the centre containing all the DLA points, and then adding 100
+  // computation of R. this is done by finding the smallest circle about the centre containing all the DLA points, and then adding 25
   float rmax = 0;
   float d;
   for (PVector p : DLA) {
@@ -66,14 +60,15 @@ void draw() {
       rmax = d;
     }
   }
-  R = rmax + 100;
-  
-  //noFill();
-  //stroke(255);
-  //ellipse(w, h, 2 * R, 2 * R);
-  //ellipse(w, h, 2 * 1.8 * R, 2 * 1.8 * R);
-  
+  R = rmax + 25;
 
+  noFill();
+  stroke(0, 0, 100);
+  // choose whether or not to display birth/death circles. toggled by mouse press
+  if (circles == true) {
+    ellipse(w, h, 2 * R, 2 * R);
+    ellipse(w, h, 2 * 4 * R, 2 * 4 * R);
+  }
 
   boolean hit = false;
   while (hit == false) {
@@ -84,13 +79,13 @@ void draw() {
       for (PVector p : DLA) {
         float dist = sqrt( (brownians[i].x - p.x)*(brownians[i].x - p.x) + (brownians[i].y - p.y)*(brownians[i].y - p.y) );
         if (dist < r) { // if collision, add bm to aggregate
-          println("hit!");
+          println(frame);
           DLA.add(new PVector(brownians[i].x, brownians[i].y));
           hit = true;
           ellipse(brownians[i].x, brownians[i].y, r, r);
           break;
         }
-        if (dist > 1.8 * R) {
+        if (dist > 4 * R) {
           hit = true; // not actually hit
           break;
         }
@@ -101,4 +96,8 @@ void draw() {
     }
   }
   frame++;
+}
+
+void mousePressed() {
+  circles = !circles;
 }
